@@ -1,0 +1,48 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+# Read the data from the CSV file
+filepath = r'AAPL.csv'
+data = pd.read_csv(filepath)
+
+# Calculate RS-Ratio and RS-Momentum
+close_prices = data['Close']
+rs_ratio = close_prices / close_prices.iloc[0]
+rs_momentum = close_prices.pct_change()
+
+# Create a figure and axis
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.set_xlim(0, 2)
+ax.set_ylim(-0.3, 0.3)
+ax.axhline(0, color='gray', linestyle='--')
+ax.axvline(1, color='gray', linestyle='--')
+
+# Initialize an empty scatter plot
+scatter = ax.scatter([], [], s=25)
+
+# Add axis labels and a title
+ax.set_xlabel('RS-Ratio')
+ax.set_ylabel('RS-Momentum')
+ax.set_title('Relative Rotation Graph - AAPL')
+
+# Add a label at the top with AAPL ticker and date range
+start_date = data['Date'].iloc[0]
+end_date = data['Date'].iloc[-1]
+ax.text(0.5, 0.95, f"AAPL ({start_date} - {end_date})", transform=ax.transAxes,
+         ha='center', va='center', fontsize=12, fontweight='bold', bbox=dict(facecolor='white', edgecolor='black'))
+
+# Animation update function
+def animate(i):
+    x = rs_ratio.iloc[:i+1]
+    y = rs_momentum.iloc[:i+1]
+    scatter.set_offsets(list(zip(x, y)))
+
+# Create the animation
+ani = animation.FuncAnimation(fig, animate, frames=len(data), interval=200, blit=False)
+
+# Save the animation as a GIF file
+ani.save('RRG_animation.gif', writer='pillow')
+
+# Display the animation
+plt.show()
